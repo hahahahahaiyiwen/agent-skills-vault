@@ -1,0 +1,31 @@
+# Explicit orchestrator-boot initializes this file in place.
+# Replace setup placeholders; keep <feature-name> as a runtime worktree token.
+organization:
+  name: <owner-name>
+  url: <owner-url>
+  project_board:
+    number: <project-number>
+    url: <project-board-url>
+    statuses:
+      backlog: Backlog
+      ready: Ready
+      in_progress: In progress
+      done: Done
+
+repos:
+  <repo-key>:
+    path: <checkout-path>
+    git: <git-url>
+    desc: <description>
+    lang: <programming-language>
+    status: active
+    manifest: <manifest-path>
+    # Select one mode: auto-approval or reasonable-approval.
+    autopilot:
+      mode: <approval-mode>
+      wait_for_ci: false
+    self_review:
+      mode: until_clean
+      max_iterations: 3
+    worktrees:
+      convention: '<worktree-parent>\<repo-key>-<feature-name>'

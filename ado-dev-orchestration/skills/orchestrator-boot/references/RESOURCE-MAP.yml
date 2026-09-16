@@ -1,0 +1,27 @@
+organization:
+  name: <OrganizationName>
+  url: <OrganizationURL>
+  project:
+    name: <ProjectName>
+    url: <ProjectURL>
+  board:
+    area: <BoardArea>
+    assigned_to: <AssignedToEmail>
+
+repos:
+  <RepoName>:
+    path: repos/<RepoName>
+    git: <GitURL>
+    ado_repo: <AdoRepoName>
+    desc: <RepoDescription>
+    lang: C#
+    status: active
+    target_branch: main
+
+infrastructure:
+  databases: none
+  cache: none
+  deploy:
+    method: dotnet package
+    trigger: release
+    provider: manual

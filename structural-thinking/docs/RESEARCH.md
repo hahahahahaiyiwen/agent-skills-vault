@@ -1,7 +1,12 @@
-# Structured Communication for Software Agents
+# Research Background: Structured Communication for Software Agents
 
-**Status:** Research synthesis and design direction
+**Status:** Background research from the original communication-focused exploration
 **Evidence reviewed through:** 16 September 2026
+
+The current purpose and method inventory are in [README.md](README.md).
+This document preserves the earlier research context, not the current skill
+contract. It is not required reading for any method and does not establish
+that a structural framework improves reasoning or correctness.
 
 ## Executive conclusion
 
@@ -39,7 +44,7 @@ collectively exhaustive taxonomy. A failure can span multiple layers or
 propagate from one layer to another. Directability and repair are treated as a
 cross-cutting interaction property because users may need to correct any layer.
 
-The repository direction is to investigate whether small, on-demand Agent
+The original research direction was to investigate whether small, on-demand Agent
 Skills can improve communication at human-agent boundaries, particularly
 grounding and human-facing externalization. Truthful evidence status may be an
 important safeguard against making unsupported work more persuasive.
@@ -691,7 +696,7 @@ appropriate skepticism. Preference and polished output alone are insufficient.
 - Persistent or personalized skills are not yet proven to improve coding-agent
   outcomes reliably.
 
-## Repository position
+## Original research position
 
 > Investigate whether on-demand Agent Skills can improve communication between
 > agents and humans, especially around grounding, externalization, and truthful

@@ -1,4 +1,4 @@
-# Structural Thinking
+# Analysis Frameworks
 
 Offer lightweight methods for organizing and examining problems, ideas,
 arguments, and documents. Apply a method when it improves understanding or
@@ -23,6 +23,7 @@ Each skill identifies its foundation and the limits of its lightweight treatment
 | `systems-analysis` | Causal-loop diagrams from system dynamics. | Reinforcing and balancing feedback, interactions, and delays. |
 | `argument-structure-analysis` | Toulmin's argument model. | Claims, grounds, warrants, backing, qualifications, and exceptions. |
 | `temporal-analysis` | Statecharts using W3C SCXML concepts. | States, events, guarded transitions, hierarchy, concurrency, and scoped completion. |
+| `first-principles-analysis` | Axiomatic method. | Foundational premises, inherited design choices, and conditional conclusions. |
 
 Each method lives in its own directory under `skills`, with a standalone
 `SKILL.md`. Load only the relevant method. Source links are optional background,

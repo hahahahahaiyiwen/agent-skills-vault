@@ -54,7 +54,9 @@ from the original handler's environment.
 | Satisfied completion evidence or merged-PR cleanup | `complete-issue` |
 
 7. Use the recorded next action as a hint, not a stale command. Preserve any
-   current self-review run and iteration count. Record setup failure through
+   current self-review run and iteration count, including finding dispositions
+   and unresolved decisions. A review-decision wait needs resolution of that
+   uncertainty, not only workflow approval. Record setup failure through
    `handoff-issue`; do not report continuation with a missing environment.
 
 ## Output

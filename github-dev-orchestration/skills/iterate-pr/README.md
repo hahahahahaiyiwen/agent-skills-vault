@@ -10,6 +10,9 @@ active issue handler repairs the branch. Propagate non-clean self-review
 results; PR iteration is not a way to reset its run limit.
 Consume current approval/exception evidence from the caller, not an inferred
 policy. Exceptions never dismiss actual feedback or CI failures.
+Apply the shared self-review dispositions before repairs: fix required scoped
+corrections, explain justified non-action, and hand off ambiguous decisions.
+Recorded non-action does not waive required approvals or thread resolution.
 Check report-only findings and exhausted review runs before repairs, not after
 changing the branch. A clean final pass still permits completion.
 Needed design/planning/self-review returns `not_ready` with a suggested next

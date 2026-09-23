@@ -24,15 +24,24 @@ For a submitted issue PR. Read-only assessment needs no ownership; return
    If repairs need another pass in an exhausted review run, return `not_ready`
    with suggested `self-review` to report the limit before making unreviewed
    fixes. Current clean evidence needs no additional pass for completion.
-3. Verify new feedback and branch-owned failures against the accepted outcome
-   and surrounding code. If repair requires an outcome/dependency change or a
-   revised design, return `not_ready` and suggest `plan-issues` or `design-issue`,
-   respectively.
+3. Triage new feedback and branch-owned failures using the finding dispositions
+   defined in `..\self-review\SKILL.md`, without invoking another review.
+   Apply the accepted outcome, design principles, and surrounding code.
+   Before repairs, use `handoff-issue`
+   for unresolved action or scope/design decisions with reason `review_decision`.
+   A read-only or already-released assessment instead returns `waiting` with
+   the needed decision, without acquiring or releasing handling.
+   Preserve justified `no_fix` dispositions unless relevant new evidence changes
+   their basis; not every review suggestion requires implementation.
+   If a required repair needs an outcome/dependency change or a revised design,
+   return `not_ready` and suggest `plan-issues` or `design-issue`, respectively.
    List independent follow-ups without creating them. Otherwise repair within
-   the accepted design, validate, commit, push, and verify the remote head.
+   the accepted design, addressing only required corrections; validate, commit,
+   push, and verify the remote head.
    Answer incorrect feedback with evidence. A sticky `CHANGES_REQUESTED` alone
    is not new work; request re-review and wait for new evidence when approval is
-   still needed. An approval exception never dismisses valid unaddressed findings.
+   still needed. An approval exception never dismisses valid unaddressed findings
+   that block acceptance or a quality gate.
 4. For other missing, stale, or non-clean self-review evidence, return
    `not_ready` with suggested `self-review` or its already-recorded next action.
    Preserve the review run/count; neither a retry nor this skill may reset an

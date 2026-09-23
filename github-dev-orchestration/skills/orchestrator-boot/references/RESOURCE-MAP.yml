@@ -24,8 +24,9 @@ repos:
     autopilot:
       mode: <approval-mode>
       wait_for_ci: false
+    # Self-review mode: until_clean or single_pass
     self_review:
       mode: until_clean
-      max_iterations: 3
+      max_iterations: 5
     worktrees:
       convention: '<worktree-parent>\<repo-key>-<feature-name>'

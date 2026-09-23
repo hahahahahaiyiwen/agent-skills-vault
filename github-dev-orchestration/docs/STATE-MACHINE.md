@@ -131,22 +131,36 @@ options live beside it, under `repos.<key>.self_review`:
 | Setting | Meaning |
 |---|---|
 | `mode: single_pass` | One independent review, reporting findings without automatic fixes. |
-| `mode: until_clean` | Review, address findings, and review again; the default mode. |
+| `mode: until_clean` | Review, triage findings, fix required scoped corrections, and review again; the default mode. |
 | `max_iterations: 3` | Default maximum review passes per run, including verification; a positive integer. Single-pass mode always uses one pass. |
 
 The reviewer can explore the entire worktree, architecture, and surrounding
 behavior, not only changed lines. This is access to relevant context, not an
 instruction to load the whole repository eagerly.
 
-Self-review evidence belongs to exact code and guidance revisions and can be
-recorded on the issue before a PR exists. Record the run, pinned settings, and
-pass before review; started or interrupted passes count. Handoff/continuation
-preserves the count. Final-pass findings trigger a handoff, not unreviewed
-fixes. A later independent request can start a new run (for example, reviewing
-new PR-feedback repairs); retrying exhausted work cannot.
+The handler triages findings against issue scope, acceptance criteria, the
+accepted design, and project principles. Preserve the original report and an
+evidenced disposition: `fix`, `no_fix`, or `needs_decision`. Optional independent
+improvements, intentional tradeoffs, and refuted findings need not trigger
+implementation. Non-action cannot waive acceptance, introduced regressions, or
+quality gates. A known required design/planning change returns `not_ready`;
+unresolved action or scope/design uncertainty instead needs a `review_decision`
+handoff with the alternatives, recommendation, and specific decision to resume.
 
-Only clean review proceeds to submission/completion. PR review handles
-submitted feedback, CI, and repository requirements; it need not repeat
+Self-review evidence belongs to exact issue/design, code, and guidance revisions
+and can be recorded on the issue before a PR exists. Record the run, pinned
+settings, and pass before review; started or interrupted passes count. Preserve
+reported findings, dispositions, and the remaining required/undecided count.
+Handoff/continuation preserves the count and dispositions. In `until_clean`,
+final-pass required fixes trigger a handoff, not unreviewed changes.
+A later independent request can start a new run (for example, reviewing new
+PR-feedback repairs); retrying exhausted work cannot.
+
+Only a current completed independent pass with no required or undecided findings
+remaining can be clean; justified `no_fix` items remain visible and do not
+require another pass merely to remove them. Clean review proceeds to
+submission/completion. PR review handles submitted feedback, CI, and repository
+requirements; it need not repeat
 unchanged self-review or introduce a universal human-approval gate.
 
 ## Board state
@@ -353,9 +367,11 @@ before the final assessment; another agent's active work means `paused`, not
 `drained`. Except for configured CI observation, do not poll unchanged waits.
 Never repeatedly publish the same handoff.
 
-Report-only self-review findings require a handoff for a remediation decision.
+Report-only results of `findings` require a handoff for a remediation decision.
 Autopilot does not automatically fix them, reset review counts, or treat a new
 autopilot invocation as an independent review request.
+Review-decision uncertainty is not a workflow-only approval wait; neither
+approval mode supplies missing evidence or resolves an ambiguous requirement.
 PR iteration checks these constraints before repairs. Current clean evidence
 still permits completion when it used the final review pass.
 

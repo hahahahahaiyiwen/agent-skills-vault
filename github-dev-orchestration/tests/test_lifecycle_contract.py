@@ -487,15 +487,14 @@ class LifecycleContractTests(unittest.TestCase):
         review = normalized(skill("self-review"))
         for requirement in (
             "a PR is not required",
-            "clean worktree matching the committed head",
-            "base/head",
-            "verifiable reviewer source",
-            "later unresolved finding",
-            "`clean` with nonzero findings",
-            "Malformed or conflicting records",
-            "all supported issue-relevant findings",
-            "A fix is not a clean review",
-            "Changed code/guidance invalidates a pass's clean result",
+            "Require clean committed work",
+            "base/head SHAs and issue/design/guidance revisions",
+            "verifiable reports for unchanged revisions",
+            "no later unresolved findings",
+            "completed current independent pass",
+            "no required or undecided findings remaining",
+            "changed revisions invalidate clean evidence",
+            "Missing or conflicting evidence is never clean",
             "on the issue",
         ):
             self.assertIn(requirement, review)
@@ -503,15 +502,13 @@ class LifecycleContractTests(unittest.TestCase):
     def test_review_scope_is_the_solution_not_only_changed_lines(self) -> None:
         review = normalized(skill("self-review"))
         for requirement in (
-            "entire issue worktree",
+            "whole worktree",
+            "Give the independent reviewer the issue scope",
+            "acceptance criteria, accepted design, manifest, repository principles",
             "Require the active handler and ready environment",
-            "Use the diff to locate changes, not to limit review",
-            "architecture",
-            "unchanged code",
-            "isolated experiments",
-            "high-level design flaws",
-            "Findings need not be on changed lines",
-            "does not mean loading every file into context",
+            "Independently inspect relevant context, not only changed lines",
+            "including design flaws",
+            "the reviewer remains read-only and reports supported findings",
         ):
             self.assertIn(requirement, review)
         for path in active_documents():
@@ -527,48 +524,171 @@ class LifecycleContractTests(unittest.TestCase):
         for requirement in (
             "`repos.<key>.self_review`",
             "`RESOURCE-MAP.yml`",
-            "`mode: until_clean`, `max_iterations: 3`",
-            "Settings must be a mapping",
+            "a mapping with `mode` (`single_pass` or `until_clean`, default)",
+            "`max_iterations` (default 3",
             "positive integer, not a boolean",
-            "Report malformed or unknown settings before review",
-            "do not silently default invalid values",
-            "`single_pass` always permits one pass",
-            "do not automatically fix or repeat",
-            "handler fixes, validates, commits, and pushes",
+            "Reject malformed/unknown settings",
+            "`single_pass` permits one pass",
+            "returns `findings` without fixes or repeats",
+            "handler fixes only scoped corrections, validates, commits, pushes",
         ):
             self.assertIn(requirement, review)
 
     def test_review_run_counts_started_and_verification_passes(self) -> None:
         review = normalized(skill("self-review"))
         self.assertLess(
-            review.index("Before each pass, record"),
-            review.index("Run the independent investigation"),
+            review.index("record `## SELF REVIEW` as `started`"),
+            review.index("Independently inspect"),
         )
         for requirement in (
-            "run ID/request",
-            "pinning its mode/limit",
+            "run/request",
+            "pinned mode/limit",
             "pass number",
             "reviewer/source",
-            "base branch/SHA",
-            "head SHA",
-            "guidance revisions",
+            "base/head SHAs",
+            "issue/design/guidance revisions",
             "`started`",
             "`findings_remaining`",
             "`interrupted`",
-            "A started pass counts, including an interrupted one",
-            "Continuation and fixes preserve the run and count",
-            "Only a later independent review request starts a new run",
-            "a retry is not one",
-            "Recover existing results",
-            "Check remaining passes before launching the reviewer",
-            "An exhausted run must hand off without another pass",
-            "reuse a finished single-pass report only for the same request and revisions",
-            "New settings apply to new runs",
-            "verification consumes a pass too",
+            "Started, interrupted, and verification passes count",
+            "Fixes, retries, and continuation never reset the run",
+            "only a later independent review request starts a new run with new settings",
+            "single-pass reuse requires the same request",
+            "check the remaining budget",
+            "check that a verification pass remains before fixing",
             "`review_limit`",
-            "do not make unreviewed final fixes",
+            "without unreviewed final fixes",
         ):
             self.assertIn(requirement, review)
+
+    def test_self_review_has_four_self_contained_steps(self) -> None:
+        review = skill("self-review")
+        self.assertEqual(
+            re.findall(r"^\d+\. \*\*([A-Za-z]+)\.\*\*", review, re.M),
+            ["Prepare", "Review", "Triage", "Act"],
+        )
+        self.assertNotIn("references\\", review)
+        self.assertFalse((SKILLS / "self-review" / "references").exists())
+        self.assertLess(review.index("**Triage.**"), review.index("**Act.**"))
+        self.assertLess(
+            review.index("Reuse only verifiable reports"),
+            review.index("check the remaining budget"),
+        )
+
+    def test_finding_dispositions_are_scoped_and_preserve_evidence(self) -> None:
+        review = skill("self-review")
+        triage = review.split("3. **Triage.**", 1)[1].split("4. **Act.**", 1)[0]
+        self.assertEqual(
+            set(re.findall(r"`(fix|no_fix|needs_decision)`", triage)),
+            {"fix", "no_fix", "needs_decision"},
+        )
+        for requirement in (
+            "Assess the problem, not automatically its suggested fix",
+            "issue scope, acceptance criteria, accepted design, manifest, repository principles",
+            "`fix` for required scoped corrections or introduced regressions",
+            "`no_fix` for evidenced refutations, accepted tradeoffs, or unrelated follow-ups (list only)",
+            "Preserve original findings",
+            "dispositions, evidence, rationale, authority, and remaining count",
+            "before fixes or handoff",
+        ):
+            self.assertIn(requirement, normalized(review))
+
+    def test_ambiguous_review_action_hands_off_before_fixes_in_either_mode(self) -> None:
+        review = normalized(skill("self-review"))
+        for requirement in (
+            "`needs_decision` for unresolved action or scope/design questions",
+            "In either mode, unresolved decisions require `handoff-issue`",
+            "reason `review_decision`, alternatives, recommendation",
+            "the specific decision needed to resume, not speculative edits",
+            "Missing triage remains undecided",
+        ):
+            self.assertIn(requirement, review)
+        self.assertLess(review.index("`review_decision`"), review.index("handler fixes"))
+
+    def test_completed_review_and_dispositions_are_saved_before_handoff(self) -> None:
+        review = normalized(skill("self-review"))
+        persisted = review.index("save pass result")
+        self.assertLess(persisted, review.index("unresolved decisions require `handoff-issue`"))
+        self.assertLess(persisted, review.index("handler fixes"))
+        self.assertIn(
+            "dispositions, evidence, rationale, authority, and remaining count on the issue before fixes or handoff",
+            review,
+        )
+
+    def test_non_actionable_findings_can_be_clean_without_waiving_blockers(self) -> None:
+        review = normalized(skill("self-review"))
+        for requirement in (
+            "no required or undecided findings remaining",
+            "Non-action cannot waive acceptance, regressions, quality gates, or user requirements",
+            "Needed design/planning returns `not_ready`",
+            "the handler fixes only scoped corrections",
+            "independently reviews again",
+            "Review grants no exception to CI, required approvals, or thread resolution",
+            "`single_pass` permits one pass and returns `findings` without fixes or repeats",
+        ):
+            self.assertIn(requirement, review)
+        self.assertIn("Justified non-action or clarification alone needs no extra pass", review)
+        self.assertLess(review.index("Return `clean` only"), review.index("`review_limit`"))
+
+    def test_disposition_only_clarification_does_not_reset_or_spend_a_pass(self) -> None:
+        review = normalized(skill("self-review"))
+        for requirement in (
+            "Reuse only verifiable reports for unchanged revisions and no later unresolved findings",
+            "Justified non-action or clarification alone needs no extra pass",
+            "continuation never reset the run",
+            "changed revisions invalidate clean evidence",
+        ):
+            self.assertIn(requirement, review)
+        for name in ("handoff-issue", "continue-issue"):
+            with self.subTest(skill=name):
+                self.assertIn(
+                    "finding dispositions and unresolved decisions",
+                    normalized(skill(name)),
+                )
+
+    def test_review_decision_handoff_is_not_satisfied_by_blanket_approval(self) -> None:
+        autopilot = normalized(skill("orchestrator-autopilot"))
+        self.assertIn("A `review_decision` handoff requires resolving the specific finding's", autopilot)
+        self.assertIn("neither approval mode can replace that evidence with blanket approval", autopilot)
+        self.assertIn(
+            "A review-decision wait needs resolution of that uncertainty, not only workflow approval",
+            normalized(skill("continue-issue")),
+        )
+        self.assertIn(
+            "the specific decision needed to resume",
+            normalized(skill("self-review")),
+        )
+
+    def test_pr_feedback_uses_scoped_triage_before_repairs(self) -> None:
+        iteration = normalized(skill("iterate-pr"))
+        self.assertIn(r"`..\self-review\SKILL.md`", iteration)
+        self.assertIn("without invoking another review", iteration)
+        self.assertLess(
+            iteration.index("Triage new feedback"),
+            iteration.index("Otherwise repair within the accepted design"),
+        )
+        self.assertLess(
+            iteration.index("`review_decision`"),
+            iteration.index("Otherwise repair within the accepted design"),
+        )
+        for requirement in (
+            "Preserve justified `no_fix` dispositions unless relevant new evidence changes their basis",
+            "not every review suggestion requires implementation",
+            "addressing only required corrections",
+            "read-only or already-released assessment instead returns `waiting`",
+            "without acquiring or releasing handling",
+        ):
+            self.assertIn(requirement, iteration)
+
+    def test_publication_and_merge_share_review_disposition_gates(self) -> None:
+        publication = normalized(skill("open-pr"))
+        self.assertIn(r"`..\self-review\SKILL.md`", publication)
+        self.assertIn("required or undecided findings cannot count as clean", publication)
+        pr = normalized(read(SKILLS / "iterate-pr" / "references" / "PR-STATE.md"))
+        self.assertIn(r"`..\..\self-review\SKILL.md`", pr)
+        self.assertIn("without starting another review here", pr)
+        self.assertIn("required or undecided findings block progression", pr)
+        self.assertIn("does not waive required GitHub approvals or thread resolution", pr)
 
     def test_handoff_and_continuation_preserve_review_runs(self) -> None:
         handoff = normalized(skill("handoff-issue"))
@@ -1158,8 +1278,8 @@ class LifecycleContractTests(unittest.TestCase):
             with self.subTest(skill=name):
                 self.assertIn("`not_ready`", skill_output(name))
         review = normalized(skill("self-review"))
-        self.assertIn("If remediation needs another lifecycle stage, return `not_ready`", review)
-        self.assertIn("preserve the run/count", review)
+        self.assertIn("Needed design/planning returns `not_ready` with the next skill", review)
+        self.assertIn("preserving the run/count", review)
         iteration = normalized(skill("iterate-pr"))
         self.assertIn("`not_ready` with suggested `self-review`", iteration)
         self.assertIn("preserve a current report-only `findings` result", iteration)

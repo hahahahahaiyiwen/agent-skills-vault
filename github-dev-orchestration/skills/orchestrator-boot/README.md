@@ -27,8 +27,9 @@ self_review:
 ```
 
 `self-review` validates these options when invoked: `single_pass` is report-only;
-`until_clean` allows bounded review/fix/review. The limit counts review passes
-per run, including verification, and survives continuation.
+`until_clean` allows bounded review, finding triage, scoped fixes, and re-review.
+The limit counts review passes per run, including verification, and survives
+continuation.
 
 Workflow settings are opaque to boot and interpreted by their owning skill.
 Loading configuration never starts execution or grants decision authority.

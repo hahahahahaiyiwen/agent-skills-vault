@@ -20,7 +20,8 @@ a design is not, by itself, a reason to release handling.
    commits. For planning-only work or failed setup, record what exists without
    inventing a worktree. Never commit secrets or invalid artifacts for handoff.
 3. Record the handler/acquisition, progress, accepted decisions, remaining work,
-   issue/branch/head/PR, validation, and any active review run. Identify local-only
+   issue/branch/head/PR, validation, and any active review run with finding
+   dispositions and unresolved decisions. Identify local-only
    state and its recovery limitation; local paths are hints, not prerequisites.
 4. Give the pause reason, objective resume condition, and next skill. Use
    `dependency` for native blockers. PR review resumes on new actionable

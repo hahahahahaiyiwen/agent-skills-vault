@@ -4,6 +4,12 @@ On-demand reads for PR submission, iteration, and completion. Keep the
 summary limited to requirements and actionable evidence, not raw histories.
 Reuse unchanged detail but refresh head/base and requirements before merge.
 
+Assess existing self-review evidence against `..\..\self-review\SKILL.md`,
+without starting another review here. Preserve evidenced finding
+dispositions; required or undecided findings block progression. A justified
+non-action disposition does not waive required GitHub approvals or thread
+resolution.
+
 ## Read the PR and feedback
 
 ```powershell

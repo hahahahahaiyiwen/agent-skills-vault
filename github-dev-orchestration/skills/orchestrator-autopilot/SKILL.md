@@ -82,10 +82,13 @@ completion/handoff. Independent reviewers may assist, not take over delivery.
    reuse unchanged clean evidence, not evidence invalidated by changed code.
 6. Preserve project review settings and run counts: autopilot retries are not
    independent review requests. Report-only `findings` require `handoff-issue`,
-   awaiting a remediation decision without automatic fixes. When actual human
-   involvement, an explicit user hold, unavailable capability, or an external
-   wait not covered by step 5 prevents progress, stop any watcher, preserve work
-   and hand off; then consider another issue. Required human review/approval,
+   awaiting a remediation decision without automatic fixes.
+   A `review_decision` handoff requires resolving the specific finding's
+   action or scope/design uncertainty; neither approval mode can replace that
+   evidence with blanket approval or relabel it as non-actionable.
+   When actual human involvement, an explicit user hold, unavailable capability,
+   or an external wait not covered by step 5 prevents progress, stop any watcher,
+   preserve work and hand off; then consider another issue. Required human review/approval,
    merge-queue waits, missing/unknown CI, and infrastructure or permission
    blockers are not covered by CI waiting.
    Do not manufacture approval or bypass failing/pending CI.

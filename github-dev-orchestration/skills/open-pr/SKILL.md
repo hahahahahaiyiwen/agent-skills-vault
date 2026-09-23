@@ -21,8 +21,10 @@ Released work returns `not_ready` with suggested `continue-issue`.
    branch or explicitly intended base.
 2. Verify issue/branch linkage, blockers, accepted design, acceptance evidence,
    and required local validation. Require clean review for the current base/head
-   and guidance. Return a current report-only `findings` result without fixing
-   or repeating it. For other missing, stale, or non-clean prerequisites, return
+   and guidance under `..\self-review\SKILL.md`; required or
+   undecided findings cannot count as clean. Return a current report-only
+   `findings` result without fixing or repeating it.
+   For other missing, stale, or non-clean prerequisites, return
    `not_ready` with the affected Dev step as the suggested next skill.
    Do not start that stage or reset an existing self-review run.
 3. Verify local/remote heads match and intended commits are pushed. Read PR

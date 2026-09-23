@@ -41,15 +41,24 @@ reducing coupling.
 ## Test behavior at the boundaries
 
 Meaningful boundaries provide stable seams for testing observable behavior.
-Tests should verify outcomes, important edge cases, and failure paths rather
-than mirror internal implementation details. This makes refactoring safer
-without forcing tests to change whenever private structure changes.
+Write unit tests before implementing or changing that behavior, deriving
+expected outcomes, edge cases, and failures from requirements and contracts.
+Do not leave unit-test creation until after implementation or let the completed
+code define its own expected results. For a bug fix, add the regression test
+before the fix. Tests written this way specify behavior and protect refactoring
+without depending on private implementation structure.
 
 Simple test doubles keep unit tests focused and understandable when a boundary
 has an external dependency. Integration tests remain necessary where contracts
 meet real systems because they verify assumptions that an in-memory substitute
 cannot, such as serialization, persistence, network behavior, and framework
 configuration.
+
+During development, run the smallest relevant unit and integration selections;
+use focused E2E checks when a particular interaction needs them. Run the full
+E2E suite only as final validation after development is complete, not after
+each edit. If it exposes a defect, return to targeted checks while fixing it,
+then repeat final validation once the revised development work is complete.
 
 ## Reuse dependencies deliberately
 
@@ -84,7 +93,8 @@ These rules are mutually reinforcing rather than independent mandates:
 - An evolving specification defines the intended outcome.
 - The smallest complete slice tests that intent against a working system.
 - Explicit boundaries keep the slice understandable and extensible.
-- Boundary-focused tests protect behavior as the system grows.
+- Unit tests specify boundary behavior before implementation and protect it
+  as the system grows.
 - Deliberate dependency reuse avoids unnecessary code and operational burden.
 
 Terms such as "substantial work" and "meaningful boundary" are intentionally

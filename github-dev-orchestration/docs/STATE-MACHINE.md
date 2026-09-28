@@ -96,6 +96,9 @@ On an actual pause, preserve coherent remote progress and state the remaining
 work, decision/event needed, and next useful action. Identify local-only data
 honestly. Resume from current GitHub evidence, not old paths or an old workflow's
 next-skill suggestion. Prepare only the environment needed for that action.
+Distinguish operational waits from explicit holds: new actionable CI failures,
+review feedback, or queue failures can permit scoped repairs before an old wait
+clears, but not another agent's takeover or bypassing an explicit hold.
 
 ## Board state is a projection of facts
 
@@ -160,6 +163,11 @@ behind-only main worktree. Preserve dirty, extra, or divergent work and record
 cleanup/main-update results separately from delivered status before releasing
 handling.
 
+Immediately before merging, refresh the issue's native blockers. Only completed
+closure satisfies them; cancellation and unknown/incomplete reads block new
+integration, including admin bypass. This does not replay merge gates for an
+already-merged PR.
+
 ## Autopilot chooses, rather than marches
 
 Preflight loads missing orchestration context. Input identifies the Project
@@ -177,7 +185,6 @@ Optional settings belong to the operation's repository:
 ```yaml
 autopilot:
   mode: reasonable-approval
-  wait_for_ci: false
 ```
 
 `reasonable-approval` is the default: act within the request and project
@@ -186,11 +193,13 @@ select recommended in-scope decisions and supply guarded review/queue exceptions
 during this explicit run, never a CI waiver. Neither mode resolves ambiguous
 requirements by blanket approval or overrides an explicit hold.
 
-With `wait_for_ci: true`, observe CI when it is the sole remaining gate, without
-a configured timeout. Retain owned handling; released work can be observed
-read-only. Other waits still require their actual decisions or events. Stop
-watchers and reassess on changed conditions, and do not treat watcher completion
-as permission to merge.
+Always wait for observable pending CI when it is the sole remaining gate, using
+one attached watcher without a configured timeout. Retain owned handling and
+keep owned work `In progress`; do not hand off or select another issue solely
+for this wait. Released work can be observed read-only. Reassess terminal or
+changed results and permit scoped repairs when failures become actionable.
+Other waits still need their actual decisions or events. A real interruption
+or transfer can require handoff; watcher completion is not merge permission.
 
 Refresh affected facts while working. Before reporting the board drained,
 verify the complete requested scope has no actionable work, active/preparing

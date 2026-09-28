@@ -15,9 +15,12 @@ sequence.
 `auto-approval` permits in-scope decisions and authorized review/queue exceptions,
 passed explicitly to `complete-issue`. CI and explicit holds remain binding.
 
-`wait_for_ci` defaults to false. True permits one attached watcher for a CI-only
-wait without a configured timeout; other waits need a handoff rather than polling.
-Reassess changed conditions and report failures, not assumed completion.
+Autopilot waits for observable pending CI when it is the sole remaining gate,
+using one attached watcher without a configured timeout. Retain handling and
+keep owned work `In progress`; pending CI alone does not cause a handoff or
+selection of another issue. Actionable failures allow scoped repair rather
+than waiting for passing results before resuming. Unknown CI, explicit holds,
+and merge-queue waits still need their actual resolution.
 
 Report drained, paused, or read-only status from current evidence. An empty Ready
 lane is not enough: inspect the complete scope for actionable work, handling,

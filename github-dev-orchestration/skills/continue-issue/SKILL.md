@@ -21,9 +21,11 @@ Include a handoff link if known.
 
 ## Guidance
 
-- Check current issue/PR state and the latest handoff. Resume only when its
-  conditions are met and no other active or preparing handling agent owns the
-  work. Honor explicit holds; completed or cancelled work needs no new claim.
+- Check current issue/PR state and the latest handoff. Resume when its
+  conditions are met or new actionable CI failures, review feedback, or queue
+  failures permit scoped repairs despite an operational wait. Require that no
+  other active or preparing handling agent owns the work. Honor explicit holds;
+  completed or cancelled work needs no new claim.
 - From the main worktree at `repos.<key>.path`, restore the existing task branch
   and worktree from remote references as needed, preserving dirty or divergent
   work. A merged PR needs only missing completion updates or cleanup, not a

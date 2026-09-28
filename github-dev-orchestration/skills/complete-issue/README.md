@@ -10,6 +10,11 @@ Input identifies the issue and may include its PR and an explicit admin-bypass
 request. Only that request permits `--admin`; it does not waive CI, explicit
 holds, or other non-bypassed requirements.
 
+Immediately before merging, refresh native blocking dependencies and confirm
+completed closure. Cancelled dependencies or unknown/incomplete reads block
+completion, including admin-bypass requests. Already-merged recovery does not
+replay this pre-merge check.
+
 A missing, draft, closed-unmerged, or unready PR prevents completion. Queue entry
 and scheduled auto-merge remain pending until the PR actually merges. An already
 merged PR needs only missing completion updates or cleanup, not another merge.

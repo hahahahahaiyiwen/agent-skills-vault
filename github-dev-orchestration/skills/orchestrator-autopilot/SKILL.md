@@ -21,14 +21,10 @@ The configured GitHub Project and requested scope. A read-only request returns
 a snapshot without claims or writes.
 
 Use optional `repos.<key>.autopilot` for the operation's repository, including
-the PR repository:
-
-- `mode`: `reasonable-approval` (default) follows request/manifest delegation
-  and normal GitHub approvals/queues, with no admin bypass. `auto-approval`
-  permits in-scope decisions and authorized review/queue exceptions during this
-  explicit run.
-- `wait_for_ci`: YAML boolean, default false; true waits only for pending CI
-  as the sole remaining gate, without a configured timeout.
+the PR repository. `mode` is `reasonable-approval` (default), following
+request/manifest delegation and normal GitHub approvals/queues, with no admin
+bypass. `auto-approval` permits in-scope decisions and authorized review/queue
+exceptions during this explicit run.
 
 Reject unsupported modes or invalid settings. Neither mode waives CI or explicit
 holds. Never fabricate human approval.
@@ -43,11 +39,13 @@ holds. Never fabricate human approval.
   sequence. Design and self-review are optional unless required. Raise
   consequential uncertainty; honor any review's scope, report-only mode,
   threshold, and remaining budget.
-- For a CI-only wait with `wait_for_ci: true`, use one attached CI watcher;
-  retain owned handling or observe released work read-only. Stop and reassess
-  on completion, failure, interruption, or changed head/base. With waiting
-  disabled, or for unknown CI, merge-queue waits, or other blockers, hand off
-  rather than poll. Waiting grants no merge permission.
+- For observable pending CI as the sole remaining gate, use one attached CI
+  watcher without a configured timeout; retain owned handling and keep owned
+  work `In progress`. Do not hand off or select another issue for a CI-only wait.
+  Observe released work read-only. Stop and reassess on completion, failure,
+  interruption, or changed head/base; actionable failures return to scoped
+  repair. Unknown CI and merge-queue waits need their actual resolution, not a
+  CI watcher. Waiting grants no merge permission.
 - Finish through `complete-issue` or `handoff-issue` before selecting another issue.
   For a permitted exception, pass an explicit admin-bypass request to
   `complete-issue`. Refresh affected facts; stop on uncertain ownership or failed

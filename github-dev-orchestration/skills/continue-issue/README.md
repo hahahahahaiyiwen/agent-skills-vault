@@ -10,6 +10,10 @@ dirty/divergent work and explicit holds; completed or cancelled work is not
 restarted. Merged work needs only missing completion updates or cleanup, not
 a recreated task branch or worktree.
 
+Operational waits are not repair prerequisites. New actionable CI failures,
+review feedback, or queue failures can permit scoped repairs before the old
+wait clears. Explicit holds and another agent's handling still block resumption.
+
 Record the handling agent, branch/head, and next action in a `## CONTINUE`
 issue comment. Carry forward unresolved decisions, findings, the selected review
 threshold, and remaining review budget.

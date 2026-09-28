@@ -26,6 +26,9 @@ normal GitHub merge requirements.
   accounting for an explicitly requested bypass. A missing, draft,
   closed-unmerged, or unready PR blocks completion. If already merged, finish
   only missing completion updates or cleanup.
+- Immediately before merging, refresh the issue's native blocking dependencies;
+  all must be closed with `state_reason=completed`. Cancelled dependencies and
+  unknown or incomplete reads block completion; admin bypass does not waive this.
 - Merge the PR using `gh pr merge` with `--match-head-commit <verified-head>`.
   Add `--admin` only when input explicitly requests admin bypass; it does not
   waive CI or explicit holds. Confirm actual merge; queue entry or scheduled

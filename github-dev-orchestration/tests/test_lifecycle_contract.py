@@ -191,7 +191,7 @@ class DocumentIntegrityTests(unittest.TestCase):
     def test_no_retired_skills_or_parallel_policy_engine(self) -> None:
         obsolete = (
             r"evaluate_workflow_policy|evaluate_review_budget|max_parallel_issues"
-            r"|max_self_review_rounds|max_plan_revisions|max_ci_wait"
+            r"|max_self_review_rounds|max_plan_revisions|max_ci_wait|wait_for_ci"
             r"|self-review-pr|process-external-review|execute-issue"
         )
         for path in runtime_documents():
@@ -224,7 +224,7 @@ class ConfigurationTests(unittest.TestCase):
         self.assertIsNotNone(review)
         if review:
             self.assertGreater(int(review[2]), 0)
-        self.assertRegex(body, r"(?m)^      wait_for_ci: (true|false)$")
+        self.assertNotIn("wait_for_ci", body)
         self.assertRegex(body, r"(?m)^      mode: <approval-mode>$")
 
     def test_template_renders_without_treating_comments_as_configuration(self) -> None:
@@ -662,6 +662,21 @@ class BoardAndOwnershipTests(unittest.TestCase):
         ):
             self.assertIn(concept, handoff)
 
+    def test_operational_waits_allow_repairs_without_overriding_holds(self) -> None:
+        continuation = normalized(skill("continue-issue"))
+        for concept in (
+            "conditions are met or new actionable CI failures, review feedback, or "
+            "queue failures permit scoped repairs despite an operational wait",
+            "no other active or preparing handling agent",
+            "Honor explicit holds",
+        ):
+            self.assertIn(concept, continuation)
+        self.assertNotIn("Resume only when its conditions are met", continuation)
+        handoff = normalized(skill("handoff-issue"))
+        self.assertIn("Separate explicit holds from operational waits", handoff)
+        self.assertIn("Pending CI alone is not a reason to hand off", handoff)
+        self.assertIn("actual interruption or transfer requires release", handoff)
+
 
 class ReviewAndMergeTests(unittest.TestCase):
     def test_review_is_optional_and_read_only_assessment_needs_no_claim(self) -> None:
@@ -814,6 +829,28 @@ class ReviewAndMergeTests(unittest.TestCase):
             normalized(read(REFERENCES / "DEV-FLOW.md")),
         )
 
+    def test_completion_refreshes_native_dependencies_before_merge(self) -> None:
+        completion = normalized(skill("complete-issue"))
+        for concept in (
+            "Immediately before merging, refresh the issue's native blocking dependencies",
+            "all must be closed with `state_reason=completed`",
+            "Cancelled dependencies and unknown or incomplete reads block completion",
+            "admin bypass does not waive this",
+        ):
+            self.assertIn(concept, completion)
+        self.assertLess(
+            completion.index("If already merged"),
+            completion.index("Immediately before merging"),
+        )
+        self.assertLess(
+            completion.index("Immediately before merging"),
+            completion.index("Merge the PR using"),
+        )
+        self.assertLess(
+            completion.index("Immediately before merging"),
+            completion.index("Close the issue with"),
+        )
+
     def test_completion_records_merged_delivery_before_issue_status(self) -> None:
         completion = skill("complete-issue")
         guidance = normalized(completion.split("## Guidance\n", 1)[1].split("\n## ", 1)[0])
@@ -932,25 +969,28 @@ class AutopilotTests(unittest.TestCase):
             "this explicit run", "PR repository",
             "Neither mode waives CI or explicit holds",
             "Never fabricate human approval",
-            "Reject unsupported modes or invalid settings", "YAML boolean",
+            "Reject unsupported modes or invalid settings",
         ):
             self.assertIn(concept, body)
         for name in ACTIVE - {"orchestrator-autopilot"}:
-            self.assertNotRegex(skill(name), r"auto-approval|reasonable-approval|wait_for_ci")
+            self.assertNotRegex(skill(name), r"auto-approval|reasonable-approval")
 
-    def test_configured_ci_wait_is_unbounded_only_for_observable_ci(self) -> None:
+    def test_ci_only_wait_retains_handling_without_a_configuration_switch(self) -> None:
         body = normalized(skill("orchestrator-autopilot"))
         for concept in (
-            "`wait_for_ci`", "default false", "sole remaining gate",
-            "without a configured timeout", "retain owned handling",
-            "released work read-only", "unknown CI",
-            "For a CI-only wait with `wait_for_ci: true`",
-            "merge-queue", "one attached CI watcher",
+            "observable pending CI as the sole remaining gate",
+            "one attached CI watcher without a configured timeout",
+            "retain owned handling", "keep owned work `In progress`",
+            "Do not hand off or select another issue for a CI-only wait",
+            "Observe released work read-only",
             "Stop and reassess on completion, failure, interruption, or changed head/base",
-            "With waiting disabled", "hand off rather than poll",
+            "actionable failures return to scoped repair",
+            "Unknown CI and merge-queue waits need their actual resolution, not a CI watcher",
             "Waiting grants no merge permission",
         ):
             self.assertIn(concept, body)
+        self.assertNotIn("wait_for_ci", body)
+        self.assertNotIn("wait_for_ci", read(REFERENCES / "RESOURCE-MAP.yml"))
 
     def test_stopping_uses_fresh_evidence_not_an_empty_ready_lane(self) -> None:
         body = normalized(skill("orchestrator-autopilot"))

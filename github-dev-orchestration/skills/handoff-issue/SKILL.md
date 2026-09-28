@@ -7,7 +7,9 @@ description: Preserve issue progress in GitHub and release handling for another 
 
 ## When to use
 
-To pause or transfer an issue, not after every skill return.
+To pause or transfer an issue, not after every skill return. Pending CI alone
+is not a reason to hand off; keep handling unless an actual interruption or
+transfer requires release.
 
 ## Preflight
 
@@ -25,6 +27,7 @@ and the reason for handing it off.
   where possible; verify remote commits and identify local-only limitations.
 - Post or update a `## HANDOFF` issue comment with progress, branch/head and PR
   links, key decisions, remaining work, and the next action or resume condition.
+  Separate explicit holds from operational waits.
   Include unresolved findings, the review threshold, and remaining review budget
   when relevant.
 - Verify the comment is saved before releasing handling, then stop changing the

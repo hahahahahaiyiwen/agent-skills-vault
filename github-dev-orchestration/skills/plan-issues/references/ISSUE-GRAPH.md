@@ -1,51 +1,32 @@
 # Native Issue Graph
 
-Use `gh api` against the issue's actual repository, including for cross-repo
-parents or blockers. Add `-H "X-GitHub-Api-Version: 2026-03-10"` to REST calls.
-Read all pages of relationship lists with `--paginate`; an unavailable or
-incomplete relationship view is not an empty dependency set.
+Parent/sub-issue links express decomposition; blocked-by links express
+prerequisites. A parent is not automatically a blocker. Hierarchy and dependency
+graphs are checked separately for self-links and cycles; a parent may depend on
+a child.
 
-| Read | Endpoint |
+## API lookup
+
+Use `gh api` with `-H "X-GitHub-Api-Version: 2026-03-10"`. Paths below are relative
+to `repos/<owner>/<repo>/issues/<number>` in the issue's actual repository.
+
+| Read | GET suffix |
 |---|---|
-| Issue state and database ID | `repos/<owner>/<repo>/issues/<number>` |
-| Parent | `repos/<owner>/<repo>/issues/<number>/parent` |
-| Children | `repos/<owner>/<repo>/issues/<number>/sub_issues` |
-| Prerequisites | `repos/<owner>/<repo>/issues/<number>/dependencies/blocked_by` |
-| Dependents | `repos/<owner>/<repo>/issues/<number>/dependencies/blocking` |
+| Parent | `parent` |
+| Children | `sub_issues` |
+| Prerequisites | `dependencies/blocked_by` |
+| Dependents | `dependencies/blocking` |
 
-An authoritative absent-parent response means a root issue. Verify access to
-the issue before interpreting a not-found response as an absent relationship.
-`state=closed` satisfies a blocker only with `state_reason=completed`.
+- Children: `POST sub_issues` or `DELETE sub_issue` on the parent, with
+  `-F sub_issue_id=<child-id>`.
+- Prerequisites: `POST dependencies/blocked_by` with `-F issue_id=<blocker-id>`,
+  or `DELETE dependencies/blocked_by/<blocker-id>` on the dependent.
 
-## Writes
+Read referenced issues in their own repositories for numeric database `id`
+values, not issue numbers or GraphQL node IDs. Read relationship lists with
+`--paginate`; failed or incomplete reads are unknown, not empty. Verify issue
+access before treating not-found as no parent.
 
-Read numeric database `id` values from REST issue responses; they are not
-issue numbers or GraphQL node IDs.
-
-```powershell
-gh api --method POST `
-  -H "X-GitHub-Api-Version: 2026-03-10" `
-  repos/<parent-owner>/<parent-repo>/issues/<parent-number>/sub_issues `
-  -F sub_issue_id=<child-database-id>
-
-gh api --method POST `
-  -H "X-GitHub-Api-Version: 2026-03-10" `
-  repos/<owner>/<repo>/issues/<number>/dependencies/blocked_by `
-  -F issue_id=<blocker-database-id>
-```
-
-Remove a blocker with `DELETE` at
-`repos/<owner>/<repo>/issues/<number>/dependencies/blocked_by/<blocker-database-id>`.
-Remove a child with `DELETE` at
-`repos/<parent-owner>/<parent-repo>/issues/<parent-number>/sub_issue` and
-`-F sub_issue_id=<child-database-id>`.
-
-Before each write, inspect current relationships and skip an existing
-postcondition. Validate referenced issues, hierarchy depth, self-links, and
-cycles. Hierarchy and dependency graphs are checked separately: a parent may
-legitimately depend on a child. Preserve changes already made if a later
-operation fails; record the partial result and re-read before retrying.
-
-Adding or removing a dependency changes the execution plan. Apply
-`plan-issues` judgment and record why; do not remove a real prerequisite just
-to make an issue Ready.
+A prerequisite is satisfied only when closed with `state_reason=completed`,
+not cancelled. Read current links before writing; verify changes and report
+failed/partial updates. Do not remove a real blocker merely to change status.

@@ -1,41 +1,47 @@
-# Plan and Dev Routing
+# Development Flow
+
+## Issue delivery cycle
 
 ```text
-Plan: goal/discovery -> high-level design -> plan-issues -> reconcile-board
-Dev:  claim-issue -> design-issue -> implement-issue -> self-review
-        -> open-pr -> iterate-pr -> complete-issue
+claim-issue -> design-issue -> implement-issue -> self-review
+  -> open-pr -> iterate-pr -> complete-issue
 ```
 
-Arrows show the normal order, not permission for a skill to invoke its successor.
-Each skill returns to its caller; only an explicitly requested workflow sequences
-the stages. A direct invocation stops at its result, including after approval.
+`claim-issue` and `complete-issue` are the required endpoints for delivering a
+new issue. The intermediate skills are optional: use them in any order, repeat,
+or skip them. The arrows show a usual route, not mandatory checkpoints.
+`complete-issue` requires a PR, not an invocation of `open-pr`.
+
+## Roadmap planning cycle
+
+```text
+roadmap review -> plan-issues -> updated issue graph/board -> roadmap review
+```
+
+`plan-issues` works at the product/project roadmap level, adding, editing, or
+removing issues and relationships from the plan. This is separate from delivering
+one issue. Routine design changes do not restart planning; discoveries affecting
+goals, outcomes, or dependencies may inform the next roadmap review.
+Preserve issue history when withdrawing work.
+
+## Handoff between handling agents
+
+```text
+handoff-issue -> continue-issue -> next useful activity
+```
+
+Handoff records progress and releases the outgoing handling agent.
+Continuation lets the next handling agent restore the same issue and task branch,
+recreating its worktree if needed. This is not a new claim or a restart of the
+delivery cycle. The same transfer also supports a new session for the same agent.
+
+## Supporting capabilities
 
 | Need | Skill |
 |---|---|
-| Initialize local mapping on explicit first use, or load context and guidance | `orchestrator-boot` |
-| Create or revise the issue graph | `plan-issues` |
-| Inspect or repair board state | `reconcile-board` |
-| Start unclaimed Ready work | `claim-issue` |
-| Design one issue's solution | `design-issue` |
-| Implement and verify it | `implement-issue` |
-| Independently assess the solution in project context | `self-review` |
-| Publish the issue-linked PR | `open-pr` |
-| Handle PR feedback, checks, and review waits | `iterate-pr` |
-| Merge where applicable, close, and clean up | `complete-issue` |
-| Pause and release active handling | `handoff-issue` |
-| Restore released work and resume its next action | `continue-issue` |
-| Drive Ready and resumable board work until only blocked/waiting outcomes remain | `orchestrator-autopilot` |
+| Missing context or explicit configuration setup | `orchestrator-boot` |
+| Board snapshot or status drift | `reconcile-board` |
+| Drive issue delivery, one issue at a time | `orchestrator-autopilot` |
 
-Outcome, decomposition, or dependency changes suggest `plan-issues`; a material
-implementation-choice revision suggests `design-issue`. Independent follow-ups
-do not expand or block current work. A new prerequisite can return started work
-to Backlog; continue the retained branch after it clears.
-
-Self-review follows project settings and preserves its run count across
-continuation. PR feedback can trigger repair before merge gates are satisfied;
-eligible queue entry belongs to completion, not an indefinite review wait.
-No-PR outcomes bypass publication, not acceptance evidence.
-
-Autopilot supplies decisions and sequences returned actions, handling one issue
-through completion or handoff before another. Ordinary skills do not select
-its policy. Only real pauses release handling.
+Board updates accompany changed facts, not every arrow. Load
+`..\..\reconcile-board\references\PROJECT.md` only for board operations.

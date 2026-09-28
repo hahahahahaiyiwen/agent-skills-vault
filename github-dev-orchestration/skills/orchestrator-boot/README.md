@@ -1,42 +1,42 @@
 # Orchestrator Boot
 
-Boot owns local map initialization, context loading, and routing, not lifecycle
-execution. `CORE.md` and `DEV-FLOW.md` are the small shared inputs.
-`references\RESOURCE-MAP.yml` ships as a placeholder template and becomes the
-installed skill's workspace mapping in place. Do not create a second map.
+Boot loads the GitHub development orchestration model and workspace configuration.
+It is a context loader, not a prerequisite for every GitHub action.
 
-Explicit first-use boot loads `references\INITIALIZE.md`, discovers available
-facts, collects unresolved choices, and saves and re-reads the bundled map.
-Configured boot skips initialization and preserves existing values. Implicit
-or read-only boot reports `needs_configuration` without setup or writes when
-configuration is missing; an unreadable file is never permission to replace it.
+| Reference | Owns | Load when |
+|---|---|---|
+| `references\CORE.md` | GitHub records; one handling agent, one issue, one worktree; main/issue worktree layout; reloading missing configuration. | On boot. |
+| `references\DEV-FLOW.md` | Roadmap planning and issue delivery, their advisory lifecycle routes, and handoff/continuation between handling agents. | On boot. |
+| `references\RESOURCE-MAP.yml` | Repository/Project mappings and optional skill settings. | On boot. |
+| `references\INITIALIZE.md` | The configuration model and user input for missing requested entries or values. No development setup or task execution. | Requested entries are missing or incomplete. |
 
-Repository manifests remain repository-owned. Their paths are relative to the
-repository; checkout/worktree paths use the workspace root retained by boot,
-not a later working directory. The map itself is relative to this installed
-skill. Use workspace-specific installed copies when different workspaces need
-independent mappings; never silently repurpose another workspace's map.
+Keep both cycles visible. Issue delivery requires claim/completion endpoints,
+not every intermediate skill invocation or the order shown.
+Load the board and operational references only for actions that need them.
 
-Optional repository entries can supply guidance and small skill settings:
+`references\RESOURCE-MAP.yml` is the installed skill's optional workspace map.
+Explicit setup may initialize it in place using `references\INITIALIZE.md`;
+implicit/read-only requests do not write it. Known repository actions need not
+wait for unused board or skill settings. Declared unreadable guidance and
+conflicting required values remain explicit problems.
+
+The map is relative to the installed skill. `repos.<key>.path` identifies the main
+worktree on the repository default branch; issue worktrees use the configured
+convention or repository layout. Both paths use the retained workspace root,
+while manifests use repository roots. Keep paths contained and separate.
+Use workspace-specific installed copies for independent maps.
+
+Optional review settings, interpreted only when reviewing:
 
 ```yaml
-manifest: docs\PRODUCT_MANIFEST.md
 self_review:
   mode: until_clean
   max_iterations: 3
 ```
 
-`self-review` validates these options when invoked: `single_pass` is report-only;
-`until_clean` allows bounded review, finding triage, scoped fixes, and re-review.
-The limit counts review passes per run, including verification, and survives
-continuation.
-
-Workflow settings are opaque to boot and interpreted by their owning skill.
-Loading configuration never starts execution or grants decision authority.
-A caller stops on `needs_configuration`; it cannot continue with a template.
-
-Initialization reads repository and Project metadata only; it neither enumerates
-board items nor mutates GitHub. Only a verified map and readable required guidance
-permit `loaded`; a successful write alone does not. Load `references\LOCAL-ENV.md` only
-when claiming or continuing work. Graph, reconciliation, and PR operations stay
-with their owning skills. Keep initialization details off the normal boot path.
+An explicit limit overrides the omitted-setting default; merely configuring
+review does not require it for every task. Self-review asks for a severity
+threshold if missing; `until_clean` targets zero findings at that level or
+higher within the iteration cap. Workflow settings likewise grant no authority
+just by being loaded. Environment setup, Project operations, and PR requirements
+stay on demand.

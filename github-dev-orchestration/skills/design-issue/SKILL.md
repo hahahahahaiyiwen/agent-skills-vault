@@ -1,52 +1,33 @@
 ---
 name: design-issue
-description: Design an issue's solution using its acceptance criteria and the configured project manifest.
+description: Develop an issue's design and record the approved design in GitHub.
 ---
 
 # Design Issue
 
-## Use
+## When to use
 
-If shared context is missing, load `orchestrator-boot`.
-After claim/continuation or when the solution needs revision. The active
-handler must have the issue's local environment.
+To develop or revise an issue's design. No claim or prepared worktree is needed.
 
-## Steps
+## Preflight
 
-1. Read repository instructions and `repos.<key>.manifest` from loaded
-   `RESOURCE-MAP.yml`, when configured. Resolve the manifest from the repository
-   root; respect its goals, architecture, tradeoffs, and delegated decisions.
-   Reuse unchanged guidance/design; report unreadable declared guidance rather
-   than ignoring it.
-2. Read the accepted outcome and relevant code, tests, and dependencies.
-   Map acceptance criteria to behavior, interfaces, evidence, documentation,
-   and important compatibility/failure cases. Scale design effort to the task;
-   a small issue may need only a few sentences.
-3. If outcomes, shared design, decomposition, or dependencies must change first,
-   return `not_ready` with `plan-issues` as the suggested next skill.
-   List independent follow-ups without expanding the accepted outcome.
-4. Settle material choices, explaining alternatives and the recommendation.
-   Resolve required decisions and approvals under the caller's authority.
-   Before asking for human approval, put a self-contained design brief in the
-   approval tool's message: goal, approach, affected areas, key tradeoffs/risks,
-   and scope boundaries, including changes outside the repository. A link to
-   the full design may accompany the brief, but cannot replace it.
-   Ask only "Approve this design?" with `approve_design` or `revise_design`.
-   Do not bundle implementation or handoff into the approval choices.
-   Handle requested revisions within this design action; re-brief material
-   revisions before approval. Use `handoff-issue`
-   for an actual pause, unresolved blocker, or transfer, not a live discussion
-   or ordinary return after approval.
-   Missing or declined required approval never permits `ready_to_implement`.
-5. Record `## DESIGN` with the approach, acceptance/evidence mapping, decisions,
-   guidance revisions, decision/approval basis, and next action. Link detailed
-   design where useful.
-   Do not claim acceptance is complete before evidence exists.
+Invoke `orchestrator-boot` if `..\orchestrator-boot\references\RESOURCE-MAP.yml`
+is not in context.
+
+## Input
+
+The target GitHub issue, identified by URL or repository and issue number.
+
+## Guidance
+
+- Propose an in-scope design using the issue, relevant code, and project guidance.
+  Explain key decisions and tradeoffs.
+- Confirm user approval or approval within authority delegated by the request
+  or project guidance.
+- Once approved, post or update a GitHub issue comment headed `## DESIGN`,
+  summarizing the design and key decisions.
 
 ## Output
 
-Return `ready_to_implement`, `not_ready`, `handed_off`, or `partial_failure`, with
-the design and manifest references, decisions, and evidence plan.
-Suggested next skill after `ready_to_implement`: `implement-issue`.
-Stop this action after recording approval; do not implement or automatically
-hand off. Design alone does not change board status.
+Report the design, approval status, and issue-comment link. Identify pending
+decisions or failed comment writes. Approval does not itself start implementation.

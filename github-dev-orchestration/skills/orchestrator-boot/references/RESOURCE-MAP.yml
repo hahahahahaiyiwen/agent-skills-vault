@@ -1,5 +1,6 @@
 # Explicit orchestrator-boot initializes this file in place.
-# Replace setup placeholders; keep <feature-name> as a runtime worktree token.
+# Resolve entries needed for the request; optional sections need not be configured.
+# Keep <feature-name> as a runtime worktree token.
 organization:
   name: <owner-name>
   url: <owner-url>
@@ -14,19 +15,23 @@ organization:
 
 repos:
   <repo-key>:
-    path: <checkout-path>
+    # Workspace-relative main worktree; kept on the repository default branch.
+    path: <main-worktree-path>
     git: <git-url>
     desc: <description>
     lang: <programming-language>
     status: active
     manifest: <manifest-path>
-    # Select one mode: auto-approval or reasonable-approval.
+    # Optional; interpreted only during an explicitly requested autopilot run.
+    # Select auto-approval or reasonable-approval, or omit to use the latter.
     autopilot:
       mode: <approval-mode>
       wait_for_ci: false
-    # Self-review mode: until_clean or single_pass
+    # Optional review settings, not a requirement to review before publication.
+    # Mode: until_clean or single_pass; this explicit limit overrides the default.
     self_review:
       mode: until_clean
       max_iterations: 5
     worktrees:
+      # Workspace-relative issue worktrees, separate from the main worktree.
       convention: '<worktree-parent>\<repo-key>-<feature-name>'

@@ -1,21 +1,12 @@
 # Iterate PR
 
-This module owns submitted PR feedback and check handling, including external
-review waits. The shared PR-state reference is also used at submission and
-completion. Preserve head-bound evidence, complete required-review/check reads,
-sticky-review handling, and handoff instead of unchanged polling. An explicit
-caller-managed wait instead returns `waiting` with all unmet conditions and
-unchanged handling; the caller observes it, not this skill. Only the
-active issue handler repairs the branch. Propagate non-clean self-review
-results; PR iteration is not a way to reset its run limit.
-Consume current approval/exception evidence from the caller, not an inferred
-policy. Exceptions never dismiss actual feedback or CI failures.
-Apply the shared self-review dispositions before repairs: fix required scoped
-corrections, explain justified non-action, and hand off ambiguous decisions.
-Recorded non-action does not waive required approvals or thread resolution.
-Check report-only findings and exhausted review runs before repairs, not after
-changing the branch. A clean final pass still permits completion.
-Needed design/planning/self-review returns `not_ready` with a suggested next
-skill. Completion is also a suggestion, not an automatic invocation.
-Distinguish direct merge readiness, queue admission, and an already-entered
-queue wait; queue-only checks cannot prevent the step that enqueues the PR.
+Iteration has three responsibilities: review current PR comments, address
+findings selectively, and reply in the review threads. Preflight loads missing
+orchestration context; input identifies the PR.
+
+Use issue scope, acceptance criteria, and project principles to choose fixes.
+Verify and push changes, explain non-action, and leave unresolved decisions
+explicit. Resolve only addressed threads when permitted, without duplicate replies.
+
+Read-only/report-only requests produce an assessment without code or comment
+writes. Iteration is not merge-readiness assessment and does not merge the PR.

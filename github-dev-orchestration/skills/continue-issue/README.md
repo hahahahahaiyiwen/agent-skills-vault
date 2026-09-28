@@ -1,11 +1,18 @@
 # Continue Issue
 
-Continuation owns cross-agent recovery and identification of the next unfinished
-action, not its execution. It may rebuild the checkout, worktree, and declared
-setup on a fresh machine. Preserve the single-handler check, objective resume conditions,
-preparing/active acquisition records, merged-PR recovery, and the shared local
-environment procedure. Never turn a wait into a fresh claim or reset an
-unfinished self-review run.
-Use only the current handoff's conditions. Actionable feedback can permit
-repair while merge gates remain unmet. Deleted task refs after verified
-completion use recovery commits, not a new branch or obsolete toolchain setup.
+Continuation resumes existing issue work without a new claim or branch.
+Preflight loads missing orchestration context; input identifies the issue
+and optionally its handoff comment.
+
+Check current issue/PR state, resume conditions, and handling before restoring
+the existing branch and worktree through the mapped main worktree. Preserve
+dirty/divergent work and explicit holds; completed or cancelled work is not
+restarted. Merged work needs only missing completion updates or cleanup, not
+a recreated task branch or worktree.
+
+Record the handling agent, branch/head, and next action in a `## CONTINUE`
+issue comment. Carry forward unresolved decisions, findings, the selected review
+threshold, and remaining review budget.
+A missing old heading does not block recovery, and suggested next steps are
+not required stages. Return the resumed context and next action or the blocker,
+without automatically executing another delivery action.

@@ -1,46 +1,36 @@
 ---
 name: claim-issue
-description: Acquire new Ready work and prepare its remote branch, local worktree, and development environment.
+description: Claim an eligible GitHub issue, prepare its worktree, and record the claim.
 ---
 
 # Claim Issue
 
-## Use
+## When to use
 
-If shared context is missing, load `orchestrator-boot`.
-For unclaimed Ready work. Existing task branches, PRs, or released claims return
-`continue_existing` with `continue-issue` as the suggested next skill.
+To claim a new issue and prepare its worktree for development.
 
-## Steps
+## Preflight
 
-1. Use targeted `reconcile-board` and read the contract, native blockers,
-   assignees, handling records, branches, and PRs. Require an open Ready issue,
-   satisfied dependencies, project guidance, and no conflicting handler.
-2. Choose handler/claim identifiers and discover the default branch's remote
-   SHA. Use `issue/<number>` or the repository's deterministic branch convention;
-   never choose another ref to evade an acquisition conflict.
-3. Recheck status, blockers, and handling immediately before creating the ref:
+Invoke `orchestrator-boot` if `..\orchestrator-boot\references\RESOURCE-MAP.yml`
+is not in context.
 
-   ```powershell
-   gh api --method POST repos/<owner>/<repo>/git/refs `
-     -f ref='refs/heads/<task-branch>' -f sha='<base-sha>'
-   ```
+## Input
 
-   An existing ref or lost race returns to discovery, not takeover.
-4. Verify the ref and post `## CLAIM` with `Handling: preparing`, handler/claim
-   IDs, branch/base SHAs, and manifest revision.
-5. Follow `..\orchestrator-boot\references\LOCAL-ENV.md` to clone if absent,
-   attach the worktree, and prepare repository-declared setup.
-6. Recheck ownership, head, blockers, and environment readiness. Update the
-   record to `Handling: active`, include setup evidence, and reconcile the issue
-   to `In progress`. Do not report a successful claim before setup succeeds.
-7. After interruption, finish the same verified acquisition's missing steps.
-   Preserve remote work and use `handoff-issue` for a setup failure; an
-   unverified branch without a claim record is not yours to reset or delete.
+The target GitHub issue, identified by URL or repository and issue number.
+
+## Guidance
+
+- Confirm the issue is open, its blocking dependencies are completed, and no
+  active or preparing handling agent owns it. Use `continue-issue` for existing
+  branch/PR work instead of a second claim.
+- Prepare or verify the main worktree at `repos.<key>.path`. Create the task
+  branch and issue worktree from the intended base using the configured layout
+  or repository conventions. Preserve existing work; do not bypass a claim
+  conflict with another branch.
+- Post a GitHub issue comment headed `## CLAIM`, identifying the handling agent,
+  branch, and base commit. Update a configured board item to `In progress`.
 
 ## Output
 
-Return `claimed`, `continue_existing`, `waiting`, or `partial_failure`, with the
-claim record, branch/head, worktree/setup result, and status.
-Suggested next skill: `design-issue` after `claimed`, or `continue-issue` after
-`continue_existing`. Return without starting either skill.
+Report the claim and worktree, or why the claim was declined. Include any
+partial setup if the attempt failed.

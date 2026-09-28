@@ -1,10 +1,14 @@
 # Plan Issues
 
-One entry point owns initial planning and graph revision. It creates or
-revises native relationships and issue contracts; reconciliation owns status.
-The graph API reference is loaded only for graph operations. Preserve
-idempotency, evidence-based revision, cross-repository identities, and the
-distinction between hierarchy and prerequisites.
-Unresolved planning without an owned handling interval returns `needs_decision`,
-not a fabricated handoff or successful plan. Keep the proposal on an existing
-issue when available; do not create an issue just to host a wait.
+Planning revises the product/project roadmap, not an individual implementation.
+Preflight loads missing orchestration context; input supplies the repository or
+Project and goals. Read-only requests return proposals without writes.
+
+Review existing work, revise issues with clear acceptance criteria, and maintain
+native relationships and affected board statuses. Preserve human content, active
+work, and history. Record material reasons on affected issues, not in a separate
+planning ledger.
+
+`references\ISSUE-GRAPH.md` is a compact relationship/API lookup; shared
+`..\reconcile-board\references\PROJECT.md` defines board states and access.
+Planning does not claim work or require a reconciliation round trip.

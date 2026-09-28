@@ -1,24 +1,20 @@
 # Self Review
 
-Self-review assesses the issue's solution in its project context, with the
-whole worktree available for exploration. A diff is an entry point, not the
-review boundary. Preserve independent findings and exact-code evidence.
+Self-review uses **When to use / Preflight / Input / Guidance / Output**.
+Preflight loads missing orchestration context; input identifies the issue and
+the user's severity threshold. Ask for the threshold if it has not been supplied.
 
-Triage findings against issue scope, acceptance criteria, the accepted design,
-and project principles before fixing anything. Required corrections differ from
-optional improvements, intentional tradeoffs, and refuted findings. Preserve the
-evidence and reason for not acting; do not expand the issue to satisfy every
-suggestion. Ambiguous action or scope/design decisions need a concrete handoff,
-not speculative fixes or silent dismissal.
+The target is inclusive: High means zero High or Critical findings. Review the
+relevant whole worktree independently, address qualifying findings within scope,
+and re-review. Raise consequential uncertainty rather than making speculative
+changes or dropping unresolved findings from the count.
 
-Project settings choose report-only `single_pass` or bounded `until_clean`.
-Keep run/pass state durable on the issue; continuation cannot reset it.
-Final-pass required fixes stop before unreviewed changes. A current completed
-review can be clean with justified non-actionable findings, but never with
-required or undecided findings remaining. These settings never authorize
-GitHub bypass; the caller supplies any required approvals or merge exceptions,
-and CI remains required.
-Return review results to the caller. A needed design/planning stage returns
-`not_ready` without resetting the review run; clean review does not publish a PR.
+Keep the configured iteration cap (default 3 when omitted) across retries and
+continuation; all started, interrupted, and verification passes count.
+`single_pass` and read-only requests remain report-only. Reaching the cap or
+pausing without a completed current review meeting the target is an unmet
+target, not success.
 
-The skill is self-contained: prepare, review, triage, and act.
+Report counts at every severity, including lower-level findings left open.
+Meeting the selected target does not mean every finding is cleared and is
+not a publication or merge prerequisite unless explicitly required.

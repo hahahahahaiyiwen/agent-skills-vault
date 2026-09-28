@@ -1,62 +1,45 @@
 ---
 name: self-review
-description: Independently review an issue's solution, triage findings against its scope and design principles, and fix selectively or hand off unresolved decisions.
+description: Review an issue's solution and clear findings at a user-selected severity threshold.
 ---
 
 # Self Review
 
-## Use
+## When to use
 
-If shared context is missing, load `orchestrator-boot`.
-After implementation or a later review request; a PR is not required.
-Require the active handler and ready environment.
+To review an issue's solution. Read-only review needs no ownership claim.
 
-## Steps
+## Preflight
 
-1. **Prepare.** Give the independent reviewer the issue scope, acceptance
-   criteria, accepted design, manifest, repository principles, and whole worktree.
-   Require clean committed work; identify base/head SHAs and issue/design/guidance
-   revisions. Validate `repos.<key>.self_review` in `RESOURCE-MAP.yml`: a mapping
-   with `mode` (`single_pass` or `until_clean`, default) and `max_iterations`
-   (default 3; positive integer, not a boolean). Reject malformed/unknown settings.
-2. **Review.** Reuse only verifiable reports for unchanged revisions and no later
-   unresolved findings; single-pass reuse requires the same request.
-   Otherwise check the remaining budget and record `## SELF REVIEW` as `started`
-   on the issue with run/request, pinned mode/limit, pass number, reviewer/source,
-   and revisions. Independently inspect relevant context, not only changed lines,
-   including design flaws; the reviewer remains read-only and reports supported
-   findings.
-   Started, interrupted, and verification passes count. Fixes, retries, and
-   continuation never reset the run; only a later independent review request
-   starts a new run with new settings.
-3. **Triage.** Assess the problem, not automatically its suggested fix:
-   `fix` for required scoped corrections or introduced regressions;
-   `no_fix` for evidenced refutations, accepted tradeoffs, or unrelated follow-ups
-   (list only);
-   `needs_decision` for unresolved action or scope/design questions.
-   Non-action cannot waive acceptance, regressions, quality gates, or user
-   requirements. Preserve original findings; save pass result (`clean`,
-   `findings_remaining`, or `interrupted`), dispositions, evidence, rationale,
-   authority, and remaining count on the issue before fixes or handoff. Missing
-   triage remains undecided. In either mode, unresolved decisions require
-   `handoff-issue` with reason `review_decision`, alternatives, recommendation,
-   and the specific decision needed to resume, not speculative edits.
-4. **Act.** Return `clean` only for a completed current independent pass with no
-   required or undecided findings remaining. Justified non-action or clarification
-   alone needs no extra pass; changed revisions invalidate clean evidence.
-   `single_pass` permits one pass and returns `findings` without fixes or repeats
-   when corrections remain. In `until_clean`, check that a verification pass
-   remains before fixing; otherwise hand off with `review_limit`, without
-   unreviewed final fixes.
-   Needed design/planning returns `not_ready` with the next skill, preserving
-   the run/count. Otherwise the handler fixes only scoped corrections, validates,
-   commits, pushes, and independently reviews again. Interruption, unavailable
-   review, failure, or repeated non-progress also requires handoff.
-   Missing or conflicting evidence is never clean.
+Invoke `orchestrator-boot` if `..\orchestrator-boot\references\RESOURCE-MAP.yml`
+is not in context.
+
+## Input
+
+The target GitHub issue, identified by URL or repository and issue number.
+Ask the user for the severity threshold if not supplied: Low, Medium, High,
+or Critical, in increasing order. Include the selected level and all higher levels.
+
+Honor `repos.<key>.self_review`: `mode` is `until_clean` (default) or
+`single_pass` (report-only). Read-only requests are also report-only.
+`max_iterations` is a positive integer, not a boolean, default 3.
+Reject invalid settings.
+
+## Guidance
+
+- Have an independent, read-only reviewer assess the relevant whole worktree
+  and design, including uncommitted changes. Count findings by severity.
+- Unless report-only, address qualifying findings within issue scope and project
+  principles; verify fixes. Raise consequential uncertainty before speculative
+  changes; keep unresolved findings counted.
+- Re-review after fixes until zero findings at or above the threshold remain,
+  or the iteration cap is reached. Count all started, interrupted, and verification
+  passes across retries and continuation. Pause on unknown prior counts, blockers,
+  or repeated non-progress rather than resetting the budget.
 
 ## Output
 
-Return `clean`, `findings`, `not_ready`, `handed_off`, or `partial_failure`, with
-run/pass state, revisions, dispositions, and issue evidence linked from any PR.
-Suggested next skill after `clean`: `open-pr` or `iterate-pr`; do not invoke it here.
-Review grants no exception to CI, required approvals, or thread resolution.
+Report the reviewed version, threshold, severity counts, fixes, and remaining
+findings. Mark the target met only after a completed review of the current version
+confirms zero qualifying findings; otherwise report the unmet target and stopping
+reason.

@@ -1,132 +1,78 @@
 # GitHub Development Orchestration
 
-A lightweight set of skills that keeps an agent aware of the GitHub development
-lifecycle without taking over its engineering reasoning. The agent does the
-work; the skills provide orientation, coordination, and continuity.
+Lightweight, project-neutral capabilities for doing development work with
+GitHub. The agent chooses how to deliver the requested outcome; the skills
+provide useful direction, coordination, and continuity, not an enforced lifecycle.
 
-These principles guide the design and refinement of the skill set. The
-[two-cycle model and skill responsibilities](STATE-MACHINE.md) describe the
-workflow implemented by the thirteen skills. `orchestrator-autopilot`
-coordinates that lifecycle across Ready and resumable board work.
+The [development guide](STATE-MACHINE.md) explains their use and shared boundaries.
 
 ## 1. Lightweight
 
-Keep the always-loaded context small: the lifecycle map, essential boundaries,
-and the selected project's guidance. Load detailed skills only for the action
-being performed.
+Load the selected skill, reuse known project context, and read operational
+references only when needed. Boot is a context helper, not a prerequisite for
+every action. A missing optional map entry does not block an otherwise
+well-understood repository or PR action.
 
-An individual skill returns its result and suggested next action, then stops.
-Only an explicitly requested workflow sequences lifecycle stages; approval alone
-does not authorize another stage.
-
-Prefer scoped reads and reuse of unchanged discovery results over repeated
-full-board scans. Keep tool output and durable updates concise. Carry only
-necessary coordination state between tasks, using handoffs or fresh task
-contexts rather than accumulating every issue's history.
-
-Diagnostics and investigation tooling are optional, not prerequisites for
-development.
+Roadmap planning and issue delivery are separate cycles. Delivery requires
+`claim-issue` for new work and `complete-issue` to finish; intermediate skills
+are optional and may run in any order. Their usual route is not a mandatory chain
+or a checklist of documents and return tokens. A direct request ends after its
+action; an explicit end-to-end request permits further actions. Decision approval
+does not silently expand execution scope.
 
 ## 2. Project neutral, manifest guided
 
-Skills describe GitHub lifecycle actions, not a particular product, language,
-toolchain, or workspace layout. Workspace configuration such as
-`RESOURCE-MAP.yml` locates repositories, boards, and their manifests, and holds
-small project-specific skill settings such as self-review mode and iteration
-limit. Per-repository `autopilot.mode` is interpreted only by the autopilot
-skill, not by individual lifecycle skills.
+Keep project-specific goals, priorities, tradeoffs, constraints, and delegated
+decisions in the project's manifest and repository instructions, not universal
+skills. The optional bundled resource map locates repositories, boards, and
+manifests; small skill settings apply only when relevant.
 
-On explicit first use, `orchestrator-boot` initializes its bundled
-`references\RESOURCE-MAP.yml` in place. Later boots reuse it; implicit or
-read-only calls report missing configuration without writing.
-
-Each project supplies a manifest describing its goals, priorities, tradeoffs,
-constraints, and the decisions delegated to the agent. Use that guidance,
-repository instructions, and existing conventions to make project-specific
-choices. Keep those choices out of universal skills.
-
-The manifest should give the agent enough direction to act independently, not
-become an exhaustive approval checklist.
+The manifest provides direction and decision boundaries, not a checklist of
+stages or approvals. Honor explicit requirements without inventing new ones.
 
 ## 3. GitHub holds durable development state
 
-GitHub is the shared source of truth across agents and sessions.
+Keep issue scope, native relationships, board status, task branches, PRs,
+important decisions, and handoffs recoverable from GitHub.
 
-| Information | Durable location |
-|---|---|
-| Task scope and acceptance criteria | Issue body |
-| Work state | Project board status |
-| Decomposition and prerequisites | Native parent/sub-issue and dependency relationships |
-| Ownership and implementation | Remote task branch, claim/continuation/handoff records, and PR |
-| Progress, decisions, and handoffs | Issue and PR comments |
-| Review and completion | PR reviews, required checks, merge state, and issue closure |
+Durability does not mean recording every activity. Persist consequential
+decisions and enough progress for collaboration or recovery; reuse issue text,
+PR descriptions, or linked repository documents. Headings such as `## CLAIM`,
+`## DESIGN`, `## IMPLEMENT`, `## COMPLETE`, `## HANDOFF`, and `## CONTINUE` identify
+record types, not workflow prerequisites; keep the body concise and flexible.
+Avoid per-refinement design records, duplicate journals, or raw session transcripts.
 
-Implementation uses a local repository checkout and an issue worktree. From
-successful claim or continuation until handoff or completion, exactly one
-agent actively handles the issue and has its local development environment.
-
-Handoff ends active handling, not durable work. A different agent may resume
-by restoring or recreating the checkout, worktree, and repository-declared
-setup from GitHub state and project guidance. Prior agent memory and local
-paths are not recovery requirements.
-
-Record concise decisions and safe progress in GitHub so continuation does not
-depend on the original context. Avoid duplicate updates and parallel state
-journals.
+For implementation, one handling agent works on one issue in its issue worktree;
+independent reviewers do not take over its branch. A handoff records recoverable
+progress and a real resume condition before releasing that agent; another agent
+can restore the environment without the original machine or conversation.
 
 ## 4. The board is the plan and roadmap
 
-The board's issue graph and current state express the plan and roadmap; no
-separate authoritative plan document is needed.
-
-Each issue uses native GitHub relationships:
-
-- **Parent issue:** the larger goal this issue contributes to. Root issues
-  have no parent.
-- **Blocked by:** zero or more prerequisite issues that must be completed
-  before development can start.
-
-Parent links describe work breakdown; blocked-by links determine execution
-order and readiness. Having a parent does not itself make an issue blocked.
+Native parent/sub-issue links express decomposition; blocked-by links express
+prerequisites. Parenthood alone proves neither blocking nor completion.
 
 | State | Meaning |
 |---|---|
-| `Backlog` | At least one blocked-by dependency is not yet satisfied. |
-| `Ready` | All blocked-by dependencies are satisfied, or there are none; work is available to start or resume. |
-| `In progress` | Claimed or continued work, including design, implementation, PR review, and documented waits. |
-| `Done` | Work is complete, the PR is merged where applicable, and the issue is closed as completed. |
+| `Backlog` | A real issue dependency prevents progress. |
+| `Ready` | Unblocked work can start, or dependency-paused work can resume. |
+| `In progress` | Started work, including review, approval, and CI waits. |
+| `Done` | Verified delivery, merged PR where applicable, and completed issue closure. |
 
-When a blocker completes, re-evaluate every dependent's remaining blockers.
-Move each dependent from `Backlog` to `Ready` once all are satisfied. Issues
-with no blockers start in `Ready`.
-
-Claiming an issue or continuing existing work moves it from `Ready` to
-`In progress`. Work stays there through design, implementation, review, and
-waits for approval or CI. A handoff records the resume condition when handling
-is released. If a new issue dependency prevents progress, preserve the work
-and return it to `Backlog` until its blockers are cleared. Review and handoff
-do not introduce separate board states.
-
-Revise the graph as new evidence changes the plan, and keep the board aligned
-with GitHub task state. Design documents may explain intent and decisions, but
-do not duplicate the execution plan.
+Update affected items when facts change. Any acting skill can do this directly;
+reconciliation is for snapshots or inconsistent state, not every design change.
+The roadmap-planning cycle adds, edits, or removes planned issues when project
+goals, outcomes, or dependencies change, not for every implementation choice.
+Preserve issue history when withdrawing work. No separate authoritative roadmap
+is required.
 
 ## 5. Prefer agent autonomy
 
-Give the agent outcomes, acceptance criteria, and project guidance; let it
-choose how to investigate, implement, validate, review, and advance the work.
-Routine implementation within an accepted design should not require approval
-for every choice. Without delegated authority, discuss material plans/design
-with the human and obtain approval; the calling workflow supplies delegation
-where appropriate.
+Let the agent investigate, adapt the design, implement, review when useful, and
+publish a PR without ritual prerequisites. Opening a PR is not merging it.
+Optional self-review is not a universal publication or merge gate; actual project
+requirements, acceptance problems, GitHub protections, and explicit holds remain.
 
-Involve a human when a consequential ambiguity cannot be resolved from project
-guidance, an action requires authority not already granted, or a high-impact,
-hard-to-reverse decision is outside the manifest's delegation. Explicit human
-constraints, platform permissions, and CI still apply. Any merge exception
-needs current, explicit authority; otherwise normal GitHub requirements apply.
-
-When one issue needs human input, record the specific decision and resume
-condition, then continue other work that can proceed. Add universal policy
-only to protect a concrete boundary that project guidance and ordinary agent
-judgment cannot adequately address.
+Involve a human for consequential uncertainty or authority not already delegated.
+Keep non-actionable suggestions separate from required corrections. Prefer the
+smallest useful coordination action over another planning or approval round trip.

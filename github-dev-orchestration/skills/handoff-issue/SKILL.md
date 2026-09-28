@@ -1,47 +1,38 @@
 ---
 name: handoff-issue
-description: Persist progress, release active handling, and state the condition and next action for continuation.
+description: Preserve issue progress in GitHub and release handling for another agent or session.
 ---
 
 # Handoff Issue
 
-## Use
+## When to use
 
-If shared context is missing, load `orchestrator-boot`.
-When work pauses or changes agent/context. A planning revision without a pause
-needs a progress update, not a handoff. Finishing an individual skill or approving
-a design is not, by itself, a reason to release handling.
+To pause or transfer an issue, not after every skill return.
 
-## Steps
+## Preflight
 
-1. Verify the handler/acquisition and read current task state. Do not release
-   another active agent's work.
-2. Push coherent, safe progress from the issue worktree and verify remote
-   commits. For planning-only work or failed setup, record what exists without
-   inventing a worktree. Never commit secrets or invalid artifacts for handoff.
-3. Record the handler/acquisition, progress, accepted decisions, remaining work,
-   issue/branch/head/PR, validation, and any active review run with finding
-   dispositions and unresolved decisions. Identify local-only
-   state and its recovery limitation; local paths are hints, not prerequisites.
-4. Give the pause reason, objective resume condition, and next skill. Use
-   `dependency` for native blockers. PR review resumes on new actionable
-   feedback or satisfied approvals; CI resumes on actionable result changes;
-   `merge_queue` resumes on merge or queue failure, not already-passing checks.
-   For a decision, include the request, alternatives, recommendation, and
-   source of the approval requirement. Distinguish a workflow-only approval wait
-   from an explicit user hold, capability failure, or task dependency; a handoff
-   is evidence, not new authority.
-5. Post `## HANDOFF` with `Handling: released` before reconciliation; reuse an
-   equivalent latest handoff only for the same handling interval. Verify it is
-   saved, then stop implementation. Preserve a self-review run's count, including
-   exhaustion; handoff is not a new review request.
-6. Invoke targeted `reconcile-board`: dependencies mean `Backlog`; design
-   approval, PR review, and CI waits remain `In progress`; completed outcomes
-   awaiting cleanup stay `Done`. Report incomplete initial setup explicitly.
+Invoke `orchestrator-boot` if `..\orchestrator-boot\references\RESOURCE-MAP.yml`
+is not in context.
+
+## Input
+
+The target GitHub issue, identified by URL or repository and issue number,
+and the reason for handing it off.
+
+## Guidance
+
+- Confirm you are the current handling agent. Save and push coherent progress
+  where possible; verify remote commits and identify local-only limitations.
+- Post or update a `## HANDOFF` issue comment with progress, branch/head and PR
+  links, key decisions, remaining work, and the next action or resume condition.
+  Include unresolved findings, the review threshold, and remaining review budget
+  when relevant.
+- Verify the comment is saved before releasing handling, then stop changing the
+  task branch. Keep board status aligned with actual state: dependency waits are
+  `Backlog`; review, approval, or CI waits remain `In progress`.
 
 ## Output
 
-Return `handed_off` or `partial_failure`, with the saved record, durable progress,
-status, resume condition, suggested next action, and local-only limitations.
-A failed GitHub write is not successful ownership release. Do not poll unchanged
-waits.
+Report the handoff comment, released handling, and next action or resume
+condition. If saving fails, report the failure without claiming a successful
+handoff.

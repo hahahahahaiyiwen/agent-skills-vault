@@ -1,9 +1,13 @@
 # Open PR
 
-Submission follows exact-commit self-review and preserves one PR per issue
-branch. GitHub checks may start at PR creation, but opening a PR is neither
-review approval nor a board-state transition. Preserve idempotent PR lookup,
-human-authored text, explicit linkage, and reuse of unchanged evidence.
-Discover existing PRs before applying publication gates so merged work can
-route to cleanup. Non-default branch targets need explicit durable cross-links;
-GitHub does not interpret their closing keywords.
+Publication can start collaboration before optional self-review or CI completes.
+It is not merge readiness. Honor explicit publication requirements and represent
+unfinished work as a draft with honest evidence, not as ready delivery.
+
+Preflight loads missing orchestration context. Input identifies the issue and
+any known task branch, base, or draft preference.
+
+Reuse the existing PR for the exact head, preserve human-authored content,
+and verify repository/base/issue linkage. Non-default targets need explicit
+cross-links because closing keywords do not automatically close their issues.
+Opening a PR usually changes no board state and needs no reconciliation.

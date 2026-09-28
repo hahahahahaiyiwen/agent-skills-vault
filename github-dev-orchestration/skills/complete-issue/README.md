@@ -1,15 +1,24 @@
 # Complete Issue
 
-Completion owns integration, issue closure, safe local/remote cleanup, and
-dependent reconciliation. Keep merge evidence separate from queue entry and
-partial cleanup. Preserve exact-head merge/deletion checks, non-code completion,
-cross-agent cleanup boundaries, and idempotent recovery after an existing merge.
-Verify caller-authorized merge exceptions for the PR repository; CI and
-non-bypassed requirements remain mandatory. Configuration or history alone
-does not authorize bypass.
+Completion checks the issue's PR, merges ready work, posts a `## COMPLETE`
+issue comment with the delivered outcome and merged PR, then closes the issue
+and updates its configured board item to `Done`. After closure, remove the
+delivered issue worktree and fast-forward the mapped main worktree.
 
-If a gate becomes pending before merge, return `waiting` without releasing
-handling only when the caller explicitly manages that wait; otherwise hand off.
-Queue entry still requires a merge-queue handoff, not a completion claim.
-Assess entry requirements before queue-only checks, and choose queue entry or
-direct merge once, not both. Verified no-PR outcomes skip PR gates entirely.
+Preflight invokes `orchestrator-boot` when the resource map is not in context.
+Input identifies the issue and may include its PR and an explicit admin-bypass
+request. Only that request permits `--admin`; it does not waive CI, explicit
+holds, or other non-bypassed requirements.
+
+A missing, draft, closed-unmerged, or unready PR prevents completion. Queue entry
+and scheduled auto-merge remain pending until the PR actually merges. An already
+merged PR needs only missing completion updates or cleanup, not another merge.
+Optional intermediate skill invocations are not prerequisites.
+
+Work from `repos.<key>.path`, the main worktree on the repository default branch.
+Remove only the exact, clean issue worktree whose branch/head matches delivered
+work; preserve extra commits and use PR evidence for squash/rebase merges.
+Main updates are fast-forward-only. Preserve dirty, ahead, or divergent states
+and report unavailable local worktrees rather than claiming cleanup succeeded.
+Record actual cleanup and main-update results in `## COMPLETE` before releasing
+handling; incomplete local cleanup does not undo verified delivery.

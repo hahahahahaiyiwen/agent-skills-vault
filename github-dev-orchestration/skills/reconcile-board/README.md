@@ -1,9 +1,12 @@
 # Reconcile Board
 
-This module owns four-state projection and board reporting, including a
-strictly read-only mode. It consumes native graph and handling facts rather
-than inventing an activation policy. Preserve complete pagination, targeted
-refreshes, dependency precedence, and the distinction between retained work,
-an active handler, and a waiting handoff.
-Reuse verified completion/release evidence for Done history while surfacing
-unfinished cleanup; Done is not proof that the handler has released ownership.
+Reconciliation reads current GitHub facts and proposes or corrects board status.
+Preflight loads missing orchestration context; input identifies a Project or
+affected issues. `--read-only` prohibits all writes, not just status edits.
+
+Inspect only the requested scope, with complete pagination for whole-board
+requests. Report unknown or conflicting state; update only changed statuses and
+verify them. No ownership claim or new lifecycle stage is implied.
+
+`references\PROJECT.md` keeps the four-state table and Project access essentials.
+Other skills may use it to update affected items directly.

@@ -1,67 +1,33 @@
-# Project Access
+# Board State and Project Access
 
-Resolve IDs from the configured Project owner (user or organization), number,
-and status names. Reuse metadata until it changes. Never embed a workspace's
-Project or option IDs in skills.
+Any acting skill may update affected items; reconciliation is not a required
+round trip.
 
-```powershell
-gh project view <number> --owner <owner> --format json
-gh project field-list <number> --owner <owner> --format json
-```
+## Four states
 
-Read the Status field and its four configured options. Require four distinct
-status option IDs; mapping two lifecycle states to one option loses readiness.
-If field enumeration is truncated, paginate ProjectV2 fields with GraphQL
-before resolving IDs.
-Missing fields or options are configuration errors, not permission to invent
-another status or change the board schema.
+| State | Evidence |
+|---|---|
+| `Backlog` | At least one native dependency is unsatisfied; preserve active work before pausing. |
+| `Ready` | New unblocked work, or a released dependency wait has cleared; retain the branch for continuation. |
+| `In progress` | Started, unblocked work, including waits for review, approval, or CI. |
+| `Done` | Accepted outcome delivered, issue closed as completed, and PR merged where applicable. |
 
-## Complete versus targeted reads
+Cancellation is not delivery. Parent links are not blockers or completion
+evidence; a branch or assignee alone does not prove active handling. Report
+conflicts or unknown evidence, and residual cleanup separately from delivery.
 
-For one issue, paginate its GraphQL `projectItems` and select the configured
-Project ID. Do not enumerate the whole board just to find its item.
+## Project access
 
-For a whole-board request, page through ProjectV2 items. A fixed item limit is
-not a complete snapshot. For example, after resolving the Project node ID:
+Resolve the configured Project owner/number, Status field, and four distinct
+option IDs with `gh project view` and `gh project field-list`. Reuse unchanged
+metadata; missing options are configuration gaps.
 
-```powershell
-gh api graphql --paginate -F id='<project-node-id>' -f query='
-query($id: ID!, $endCursor: String) {
-  node(id: $id) {
-    ... on ProjectV2 {
-      items(first: 100, after: $endCursor) {
-        nodes {
-          id
-          content {
-            __typename
-            ... on Issue { id number url title state repository { nameWithOwner } }
-          }
-          fieldValueByName(name: "Status") {
-            ... on ProjectV2ItemFieldSingleSelectValue { name optionId }
-          }
-        }
-        pageInfo { hasNextPage endCursor }
-      }
-    }
-  }
-}'
-```
+Paginate relevant connections. For one issue, select the configured Project in
+its `projectItems`; for whole-board reads, follow
+`pageInfo { hasNextPage endCursor }` through all pages.
+Failed or partial reads cannot establish a complete snapshot.
 
-Use the discovered Status field name if customized. Process each response
-page; retain only task identity, state, and actionability in working context.
-Resolve native graph details for affected issues separately. A GraphQL error,
-missing node, inaccessible item, or incomplete pagination must be reported.
-
-## Writes
-
-Add an issue with `gh project item-add <number> --owner <owner> --url <issue-url>`
-only after checking that its Project item does not already exist.
-`reconcile-board` changes status using discovered IDs:
-
-```powershell
-gh project item-edit `
-  --id <item-id> --project-id <project-id> `
-  --field-id <status-field-id> --single-select-option-id <option-id>
-```
-
-Verify the saved value after a write. Snapshot mode performs neither command.
+Attach missing items with `gh project item-add`; update statuses with
+`gh project item-edit` using resolved project/item/field/option IDs. Refresh
+facts, update only changed statuses, and verify saved values. Respect read-only
+requests and reference-only entries; report failed/partial updates.

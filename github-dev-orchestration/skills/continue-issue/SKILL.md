@@ -1,67 +1,41 @@
 ---
 name: continue-issue
-description: Restore existing issue work and its local environment, then suggest the next unfinished action.
+description: Restore existing GitHub issue work and record the new handling agent.
 ---
 
 # Continue Issue
 
-## Use
+## When to use
 
-If shared context is missing, load `orchestrator-boot`.
-For existing work. The agent, machine, checkout, and local paths may differ
-from the original handler's environment.
+To resume an issue after handoff or in a new agent session.
 
-## Steps
+## Preflight
 
-1. Read the issue, native blockers, branch/PR, and latest handling/handoff
-   records. No existing work on an open Ready issue means `claim_required`.
-   Resolve work from GitHub references, not a previous local path.
-   Use only handoffs not superseded by a later acquisition.
-2. Inspect closure/merge before old review waits. Return `already_completed`
-   if nothing remains; suggest `complete-issue` for verified merge cleanup.
-   Cleanup skips obsolete delivery gates, not ownership/environment checks.
-   Cancellation returns `waiting` with suggested `plan-issues`, never automatic
-   reopening.
-3. For unfinished delivery, evaluate the current resume condition against
-   evidence, including current decisions or exceptions supplied by the caller.
-   Record their authority source; an old handoff grants no new authority.
-   Explicit user holds and ambiguous wait origins remain unresolved.
-   Evaluate PR review/queue waits through the PR-state reference, including
-   current CI and bypass restrictions. Return `waiting` without setup or another
-   comment while a required condition is unsatisfied.
-   New actionable feedback or a CI failure can permit repair while merge gates
-   remain unmet; do not require merge readiness before restoring repair work.
-4. Verify no other agent is handling or preparing the issue. When acquiring
-   released work, record `## CONTINUE` with `Handling: preparing`, handler,
-   branch/head, answered handoff, and triggering evidence.
-   Reuse this agent's verified acquisition.
-5. Follow `..\orchestrator-boot\references\LOCAL-ENV.md`: clone/fetch, restore the
-   existing worktree, and prepare declared setup. Preserve dirty/divergent work.
-   Use integrated-commit recovery for a merged PR without recreating deleted
-   remote refs.
-6. Verify guidance, head, blockers, handling, and environment readiness; update
-   a new record to `Handling: active` and invoke targeted `reconcile-board`.
-   Identify the next unfinished action, not the whole Dev cycle; do not execute it:
+Invoke `orchestrator-boot` if `..\orchestrator-boot\references\RESOURCE-MAP.yml`
+is not in context.
 
-| Need | Suggested next skill |
-|---|---|
-| Graph/outcome revision | `plan-issues` |
-| Missing/changed design or required approval | `design-issue` |
-| Unfinished implementation | `implement-issue` |
-| Review of the current solution | `self-review` |
-| Cleanly reviewed work without a PR | `open-pr` |
-| PR feedback/checks or completion assessment | `iterate-pr` |
-| Satisfied completion evidence or merged-PR cleanup | `complete-issue` |
+## Input
 
-7. Use the recorded next action as a hint, not a stale command. Preserve any
-   current self-review run and iteration count, including finding dispositions
-   and unresolved decisions. A review-decision wait needs resolution of that
-   uncertainty, not only workflow approval. Record setup failure through
-   `handoff-issue`; do not report continuation with a missing environment.
+The target GitHub issue, identified by URL or repository and issue number.
+Include a handoff link if known.
+
+## Guidance
+
+- Check current issue/PR state and the latest handoff. Resume only when its
+  conditions are met and no other active or preparing handling agent owns the
+  work. Honor explicit holds; completed or cancelled work needs no new claim.
+- From the main worktree at `repos.<key>.path`, restore the existing task branch
+  and worktree from remote references as needed, preserving dirty or divergent
+  work. A merged PR needs only missing completion updates or cleanup, not a
+  recreated branch or worktree.
+- Post or update a `## CONTINUE` issue comment with the handling agent,
+  branch/head, and next action for resumed work. Retain unresolved decisions,
+  findings, review threshold, and remaining review budget; suggested next steps
+  are not required stages. Update the configured board item to `In progress` only
+  for resumed work.
 
 ## Output
 
-Return `continued`, `waiting`, `claim_required`, `already_completed`, or
-`partial_failure`, with handling/evidence references, branch/head, environment
-result, status, and suggested next skill. Continuation ends after restoration
-and routing; the next lifecycle action belongs to the caller.
+Report resumed handling, the worktree and next action, or why continuation
+cannot proceed. Identify failed or partial updates; do not execute further
+work unless requested.
